@@ -1,0 +1,70 @@
+'use strict';
+
+'use strict';
+
+function SceneObject(canvas, displayObj) 
+{
+    this.model = displayObj;
+    this.transform = mat4(1);       //used for transform
+    this.edge = vec4();      //used for color
+    this.matrices = [];
+    console.log("After constructor");
+    return this;
+}
+
+SceneObject.prototype = 
+{
+
+    Display: function() 
+    {
+        console.log("IN SCENE OBJECT DISPLAY");
+        console.log("    Transform is: "+this.transform);
+        console.log("   Edge is: "+this.edge);
+
+        canvas.gl.uniformMatrix4fv(canvas.mat1Pos, false, flatten(this.transform));
+        canvas.gl.uniform4fv(canvas.edgeColorPos, flatten(this.edge));
+        
+        this.model.Display();
+    },
+
+    Push: function(mat) 
+    {
+        this.matrices.unshift(mat);
+		this.transform = mat4(1);
+        
+        //Recalc
+        for(var i = 0; i < this.matrices.length; i++)
+        {
+            console.log("IN LOOP");
+			console.log("Matrices["+i+"]: "+this.matrices[i]);
+			this.transform = mult(this.transform, this.matrices[i]);
+        }
+		console.log("TRANS AFTER LOOP: "+this.transform);
+    },
+
+    Pop: function() 
+    {
+        this.matrices.shift();
+        
+        this.transform = mat4(1);
+        
+        //Recalc
+        for(var i = 0; i < this.matrices.length; i++)
+        {
+            console.log("IN LOOP");
+			console.log("Matrices["+i+"]: "+this.matrices[i]);
+			this.transform = mult(this.transform, this.matrices[i]);
+        }
+		console.log("TRANS AFTER LOOP: "+this.transform);
+     },
+
+    Top: function() 
+    {
+        return this.matrices[0];
+    },
+
+    Color: function(color) 
+    {
+         this.edge = color;
+    }
+}

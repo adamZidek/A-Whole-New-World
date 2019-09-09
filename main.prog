@@ -1,0 +1,163 @@
+'use strict';
+
+function BuildTransform(i) {
+   var a = mat4(1);
+   var edge = vec4(1,0,0,1);
+
+   switch(i) {
+       case 0:
+            // lizard is at 0.
+	    a = translate(.3,.3,.2); 
+	    a = mult(rotate(-90,[1,0,0]),a);
+        a = mult(rotate(210,[0,1,0]),a);
+	    a = mult(scalem(10,10,10),a);
+            edge = vec4(1,0,0,1);
+	    break;
+       case 1:
+            // skeleton
+            a = translate(.65,2,-100);
+            a = mult(a, scalem(2,2,2));
+            edge = vec4(0,1,0,1);
+	    break;
+       case 2:
+           // teapot is 2 x = 2
+            a = mult(translate(0,2.8,33), rotate(-90,[1,0,0]));
+            a = mult(scalem(3,3,3),a);
+            edge = vec4(0,0,1,1);
+	    break;
+       case 3:
+            // bunny is at z = 2
+            a = mult(translate(-100,0,0), scalem(.3,.3,.3));
+            edge = vec4(0,1,1,1);
+	    break;
+       case 4:
+            // epcot is at z= -2
+            a = mult(translate(100,11,0), scalem(20,20,20));
+            edge = vec4(1,0,1,1);
+	    break;
+       default:
+           //Floor
+            a = translate(0,0,0); 
+           edge = vec4(0,0,0,1);
+	    break;
+   }
+
+   canvas.gl.uniformMatrix4fv(canvas.mat1Pos, false, flatten(a));
+
+   canvas.gl.uniform4fv(canvas.edgeColorPos, flatten(edge));
+}
+
+function DoRedisplay(canvas, models) {
+   var i;
+   canvas.Redisplay();
+
+   UpdateDisplay(canvas);
+
+   for(i=0;i<models.length;i++) {
+       BuildTransform(i);
+       models[i].Display();
+   }
+
+
+   return;
+};
+
+
+function KeyFunc(evnt, canvas, models) {
+    
+    switch(evnt.key) {
+
+       //Camera Stuff
+       case 'w':  canvas.MoveCamera([0,0,1]); break;
+       case 'd':  canvas.Rotate('y', 'r', [0,0,1]); break;
+       case 'a':  canvas.Rotate('y', 'l', [0,0,-1]); break;
+       case 's':  canvas.MoveCamera([0,0,-1]); break;
+       
+       //Plane Stuff
+       case 'n':  canvas.ChangeNear(-.1); break;
+       case 'b':  canvas.ChangeNear(.1); break;
+       
+       //FOV Stuff
+       case 'c':  canvas.ChangeFOV(-1); break;
+       case 'v':  canvas.ChangeFOV(1); break;
+       
+       //Aspect Ratio Stuff
+       case '<':  canvas.ChangeAspect(-.1); break;
+       case '>':  canvas.ChangeAspect(.1); break;
+       
+       //Look at stuff
+       case 'h':  canvas.MoveEye([1,0]); break;     //left
+       case 'l':  canvas.MoveEye([-1,0]); break;    //right
+       case 'j':  canvas.MoveEye([0,1]); break;
+       case 'k':  canvas.MoveEye([0,-1]); break;
+       
+       //Reset
+       case 'r':  canvas.Reset(); break;
+       
+   }
+   DoRedisplay(canvas, models);
+};
+
+function MakeScene(models) {
+    var thing= new lizardModel();
+    models.push(new ModelDisplay(canvas, thing));
+
+    thing= new skeletonModel();
+    models.push(new ModelDisplay(canvas, thing));
+
+    thing= new teapotModel();
+    models.push(new ModelDisplay(canvas, thing));
+
+    thing= new bunnyModel();
+    models.push(new ModelDisplay(canvas, thing));
+
+    thing= new epcotModel();
+    models.push(new ModelDisplay(canvas, thing));
+    
+    thing = new FloorModel();
+    models.push(new ModelDisplay(canvas, thing));
+
+    return;
+}
+
+function MyToString(n) {
+    n = n.toFixed(2)
+    var rv = n.toString();
+    return  rv;
+}
+
+function VecToString(vec) {
+    var line = "("+ MyToString(vec[0]);
+    for (var i =1; i < vec.length; i++) {
+       line += ", "+ MyToString(vec[i]);
+    }
+    line += ")";
+
+    return line; 
+}
+
+function VecToString2(vec) {
+    return MyToString(vec[0])+" to "+MyToString(vec[1]);
+}
+
+
+function UpdateDisplay(canvas) {
+
+    var camera = canvas.GetCamera();
+    var lookAt = canvas.GetLookAt();
+    var lr = canvas.GetLR();
+    var tb = canvas.GetTB();
+    var nf = canvas.GetNF();
+    var fov = canvas.GetFOV();
+    var ratio = canvas.GetRatio();
+
+    if ( document.getElementById("cameraLoc") != null) {
+        document.getElementById("cameraLoc").value = VecToString(camera);
+        document.getElementById("lookatLoc").value = VecToString(lookAt);
+        document.getElementById("lrLoc").value = VecToString2(lr);
+        document.getElementById("tbLoc").value = VecToString2(tb);
+        document.getElementById("nfLoc").value = VecToString2(nf);
+        document.getElementById("fov").value = fov;
+        document.getElementById("ratio").value = ratio;
+    }
+}

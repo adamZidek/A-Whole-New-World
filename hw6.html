@@ -1,0 +1,124 @@
+<html>
+<head>
+<script id="vertex-shader" type="x-shader/x-vertex" >
+precision mediump float;
+
+attribute vec4 aPosition;
+attribute vec3 aBC;
+
+uniform mat4 uMatrix1, uWorld;
+uniform mat4 uCamera, uProject;
+
+varying vec3 vBC;
+
+void main() {
+
+    gl_Position = uProject * uCamera * uWorld * uMatrix1 * aPosition;
+    vBC = aBC;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+#extension GL_OES_standard_derivatives : enable
+precision mediump float;
+
+varying vec3 vBC;
+
+uniform vec4 uEdgeColor;
+
+float edgeFactor(){
+    vec3 d = fwidth(vBC);
+    vec3 a3 = smoothstep(vec3(0.0), d*1.5, vBC);
+    return min(min(a3.x, a3.y), a3.z);
+}
+
+void main(){
+   vec4 tmp;
+   tmp = uEdgeColor;
+   tmp.a = (1.0-edgeFactor())*0.95;
+
+   if (gl_FrontFacing) {  
+       gl_FragColor = tmp; 
+   } else {
+      discard;
+   }
+}
+</script>
+
+<script type="text/javascript" src="Common/webgl-utils.prog"></script>
+<script type="text/javascript" src="Common/initShaders.prog"></script>
+<script type="text/javascript" src="Common/MV.prog"></script>
+
+<script type="text/javascript" src="models/epcot.prog"></script>
+<script type="text/javascript" src="models/lizard.prog"></script>
+<script type="text/javascript" src="models/skelton.prog"></script>
+<script type="text/javascript" src="models/teapot.prog"></script>
+<script type="text/javascript" src="models/bunny.prog"></script>
+<script type="text/javascript" src="modelDisplay.prog"></script>
+<script type="text/javascript" src="models/floor.prog"></script>
+<script type="text/javascript" src="canvas.prog"></script>
+<script type="text/javascript" src="main.prog"></script>
+<script type="text/javascript" src="sceneObject.prog"></script>
+
+<style>
+    input {
+        text-align: right;
+    }
+</style>
+</head>
+<body>
+<h1>Homework 6: Adam Zidek</h1>
+<script>
+
+    // set up the canvas 
+    var canvas = new Canvas(500, 500);
+
+    var models = [];
+ 
+    MakeScene(models);
+    
+    //add a callback for keypresses
+    canvas.disp.addEventListener("keypress",
+         function(evnt) {
+            KeyFunc(evnt, canvas, models);
+         }
+    );
+
+</script>
+<br><br>
+<table >
+<tr><th> Camera </th><td><textarea row="1" cols="20" id="cameraLoc" readonly></textArea></td></tr>
+<tr><th> Look At </th><td><textarea row="1" cols="20" id="lookatLoc" readonly></textArea></td></tr>
+<tr><th> Left:Right  </th><td><textarea row="1" cols="20" id="lrLoc" readonly></textArea></td></tr>
+<tr><th> Top:Bottom </th><td><textarea row="1" cols="20" id="tbLoc" readonly></textArea></td></tr>
+<tr><th> Near:Far </th><td><textarea row="1" cols="20" id="nfLoc" readonly></textArea></td></tr>
+<tr><th> FOV </th><td><textarea row="1" cols="20" id="fov" readonly></textArea></td></tr>
+<tr><th> Aspect Ratio </th><td><textarea row="1" cols="20" id="ratio" readonly></textArea></td></tr>
+</table>
+
+<h1>Documentation</h1>
+
+<h3>Problems Encountered</h3>
+<p>I had a lot of problems getting the rotation to work, I was only able to rotate about the origin and that was confusing me
+a lot. My Bunny and Epcot are not in the proper direction, however they are in the proper coordinates. Changing the camera to start at
+-20 flips these coordinates so I just put them in the proper coordinates rather than the proper direction, Im not sure if there is a proper
+way to fix this.</p><br>
+
+<h3> Sources of Information </h3>
+<p>I used Mirkwood(a useful demo) and stack overflow for some basic javascript stuff(sin, cos, etc).</p>
+
+<h3>Collaborators</h3>
+<p>Hunter Deloe, Gabe, Chirs Persinger</p>
+
+<p>
+    
+</p>
+
+<script>
+    // update the value in the UI and display it
+    // note I can't update the UI until it has been created.
+    DoRedisplay(canvas, models);
+</script>
+
+</body>
+</html>
